@@ -28,3 +28,4 @@ buscarTransicion [] _ _ = Nothing
 buscarTransicion ((estadoInicial, caracter, estadoFinal):xs) estado simbolo
   | estadoInicial == estado && caracter == simbolo = Just estadoFinal
   | otherwise = buscarTransicion xs estado simbolo
+
