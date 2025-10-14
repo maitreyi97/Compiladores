@@ -14,16 +14,4 @@ instance Show RegEx where
     show Epsilon = "ε"
     show (Literal c) = [c]
 
-
-matchRegEx :: RegEx -> String -> Bool
-matchRegEx Epsilon c = c == ""
-matchRegEx (Literal x) c = c == [x]
-matchRegEx (Or i d) c = matchRegEx i c || matchRegEx d c
-matchRegEx (Concat i d) (c:cs) = matchRegEx i [c] && matchRegEx d cs
-matchRegEx (Star r) c = True
-    where
-        splits = allSplits c 
-
-        allSplits :: String -> [(String, String)]
-        allSplits st = [splitAt i st | i <- [0..length st]]
-
+    
