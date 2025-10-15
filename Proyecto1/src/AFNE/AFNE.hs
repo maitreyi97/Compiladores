@@ -1,7 +1,7 @@
 module AFNE.AFNE where
 
 import Data.Set (toList, fromList)
-import Regex.Regex as Regex
+import Regex.RegEx as Regex
 
 data SimboloE = SimboloE Char | Eps deriving (Eq, Ord, Show) 
 type Estado = String 
@@ -27,8 +27,7 @@ regex_to_afne (And l r) = AFNEp estados alfabeto transiciones inicial finales
         AFNEp estadosR alfabetoR transicionesR inicialR finalesR = regex_to_afne r
         estados = toList $ fromList (estadosL ++ estadosR)
         alfabeto = toList $ fromList (alfabetoL ++ alfabetoR)
-        transiciones = transicionesL ++ transicionesR ++ 
-        [ (finalL, Eps, [inicialR]) | finalL <- finalesL ] 
+        transiciones = transicionesL ++ transicionesR ++ [ (finalL, Eps, [inicialR]) | finalL <- finalesL ] 
         inicial = inicialL 
         finales = finalesR
 regex_to_afne (Or l r) = AFNEp estados alfabeto transiciones inicial finales
@@ -36,8 +35,7 @@ regex_to_afne (Or l r) = AFNEp estados alfabeto transiciones inicial finales
         AFNEp estadosR alfabetoR transicionesR inicialR finalesR = regex_to_afne r
         estados = toList $ fromList ("q_0" : estadosL ++ estadosR) 
         alfabeto = toList $ fromList (alfabetoL ++ alfabetoR) 
-        transiciones = transicionesL ++ transicionesR ++ 
-        [("q_0", Eps, [inicialL]), ("q_0", Eps, [inicialR])]
+        transiciones = transicionesL ++ transicionesR ++ [("q_0", Eps, [inicialL]), ("q_0", Eps, [inicialR])]
         inicial = "q_0"
         finales = finalesL ++ finalesR
 regex_to_afne (Kleene e) = AFNEp estados alfabeto transiciones inicial finales
