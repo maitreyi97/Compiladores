@@ -1,4 +1,4 @@
-module Regex.Regex where
+module Regex where
 
 data RegEx = Epsilon 
             | Literal Char

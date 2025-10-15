@@ -1,6 +1,6 @@
 {
 module RegexParser where 
-import Regex.RegEx
+import Regex
 }
 
 %name parseRegex
@@ -35,26 +35,27 @@ Base          : literal                      { Literal $1 }
               | '(' Disyuncion ')'           { $2 }
 
 {
-       -- Definimos el Lexer de texto a token para luego transformar a algo basado en reglas.
-       parseError :: [Token] -> a
-       parseError _ = error "Parse error"
+data Token = TokenLParen
+                  | TokenRParen
+                  | TokenPlus
+                  | TokenRep
+                  | TokenOr
+                  | TokenLiteral Char
+                  | TokenEOF
+                  deriving Show 
+-- Definimos el Lexer de texto a token para luego transformar a algo basado en reglas.
+parseError :: [Token] -> a
+parseError _ = error "Parse error"
 
-       data Token = TokenLParen
-                    | TokenRParen
-                    | TokenPlus
-                    | TokenRep
-                    | TokenOr
-                    | TokenLiteral Char
-                    | TokenEOF
-                    deriving Show 
-       lexer :: String -> [Token]
-       lexer [] = [TokenEOF]
-       lexer ('\\':'(':cs) = TokenLiteral '(' : lexer cs
-       lexer ('\\':')':cs) = TokenLiteral ')' : lexer cs
-       lexer ('(':cs) = TokenLParen : lexer cs
-       lexer (')':cs) = TokenRParen : lexer cs
-       lexer ('+':cs) = TokenPlus : lexer cs 
-       lexer ('*':cs) = TokenRep : lexer cs 
-       lexer ('|':cs) = TokenOr : lexer cs
-       lexer (c:cs) = TokenLiteral c : lexer cs
+-- Definimos el lexer que vamos a usar para las expresiones regulares.
+lexer :: String -> [Token]
+lexer [] = [TokenEOF]
+lexer ('\\':'(':cs) = TokenLiteral '(' : lexer cs
+lexer ('\\':')':cs) = TokenLiteral ')' : lexer cs
+lexer ('(':cs) = TokenLParen : lexer cs
+lexer (')':cs) = TokenRParen : lexer cs
+lexer ('+':cs) = TokenPlus : lexer cs 
+lexer ('*':cs) = TokenRep : lexer cs 
+lexer ('|':cs) = TokenOr : lexer cs
+lexer (c:cs) = TokenLiteral c : lexer cs
 }
