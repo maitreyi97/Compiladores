@@ -36,6 +36,7 @@ regexToAFNE (Or l r) = AFNEp estados alfabeto transiciones inicial finales
         estados = toList $ fromList ("q_0" : estadosL ++ estadosR) 
         alfabeto = toList $ fromList (alfabetoL ++ alfabetoR) 
         transiciones = transicionesL ++ transicionesR ++ [("q_0", Eps, [inicialL]), ("q_0", Eps, [inicialR])]
+        transiciones = transicionesL ++ transicionesR ++ [("q_0", Eps, [inicialL]), ("q_0", Eps, [inicialR])]
         inicial = "q_0"
         finales = finalesL ++ finalesR
 regexToAFNE (Star e) = AFNEp estados alfabeto transiciones inicial finales
