@@ -1,5 +1,6 @@
 import AFD.AFD
 
+
 afdParDeAs = AFD
         ["q0", "q1"]
         ['a', 'b']
