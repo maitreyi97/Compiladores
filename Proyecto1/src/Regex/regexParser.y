@@ -1,6 +1,6 @@
 {
 module RegexParser where 
-import Regex
+import Regex.Regex
 }
 
 %name parseRegex
