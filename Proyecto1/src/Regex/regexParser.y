@@ -1,5 +1,5 @@
 {
-module RegexParser where 
+module Regex.RegexParser where 
 import Regex.Regex
 }
 
@@ -52,6 +52,7 @@ lexer :: String -> [Token]
 lexer [] = [TokenEOF]
 lexer ('\\':'(':cs) = TokenLiteral '(' : lexer cs
 lexer ('\\':')':cs) = TokenLiteral ')' : lexer cs
+lexer ('\\':'+':cs) = TokenLiteral '+' : lexer cs
 lexer ('(':cs) = TokenLParen : lexer cs
 lexer (')':cs) = TokenRParen : lexer cs
 lexer ('+':cs) = TokenPlus : lexer cs 

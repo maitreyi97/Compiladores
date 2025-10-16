@@ -15,3 +15,4 @@ instance Show RegEx where
     show Epsilon = "ε"
     show (Literal c) = [c]
     show (Plus r) = "(" ++ show r ++ ")+"
+

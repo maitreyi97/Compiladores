@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -w #-}
-module RegexParser where 
+module Regex.RegexParser where 
 import Regex.Regex
 import qualified Data.Array as Happy_Data_Array
 import qualified Data.Bits as Bits
@@ -247,6 +247,7 @@ lexer :: String -> [Token]
 lexer [] = [TokenEOF]
 lexer ('\\':'(':cs) = TokenLiteral '(' : lexer cs
 lexer ('\\':')':cs) = TokenLiteral ')' : lexer cs
+lexer ('\\':'+':cs) = TokenLiteral '+' : lexer cs
 lexer ('(':cs) = TokenLParen : lexer cs
 lexer (')':cs) = TokenRParen : lexer cs
 lexer ('+':cs) = TokenPlus : lexer cs 
