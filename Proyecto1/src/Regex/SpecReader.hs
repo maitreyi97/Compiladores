@@ -25,8 +25,6 @@ parseLine linea =
                 categoria = removerEspacio c
                 expresion = parseRegex tokens
             in Just (categoria, expresion)
-        ["",_] -> Nothing
-        [_,""] -> Nothing
         _ -> Nothing
 
 obtenerCategoria :: [String] -> [Categoria]
