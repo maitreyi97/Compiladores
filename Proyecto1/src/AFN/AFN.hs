@@ -31,7 +31,7 @@ afn_afd :: AFN -> AFD
 afn_afd (AFN estados alfabeto estadoInicial transiciones estadosFinales) =
   let potenciaEstados = conjuntoPotencia estados
       tablaTransiciones = transicionesPotencia transiciones potenciaEstados alfabeto
-      estadosFactibles = estadosAlcanzables tablaTransiciones [[estadoInicial]] []
+      estadosFactibles = estadosAlcanzables tablaTransiciones [[estadoInicial]] [[estadoInicial]]
       nuevosEstadosFinales = (filter (\x -> (or (map (\y -> (y `elem` x)) estadosFinales ))) estadosFactibles)
       transicionesFinales = filter (\(x,_,_) -> x `elem` estadosFactibles) tablaTransiciones
       estadosFactiblesFormateados = (map (\s -> (concat s)) estadosFactibles)
