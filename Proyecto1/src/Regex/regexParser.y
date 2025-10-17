@@ -53,6 +53,7 @@ lexer [] = [TokenEOF]
 lexer ('\\':'(':cs) = TokenLiteral '(' : lexer cs
 lexer ('\\':')':cs) = TokenLiteral ')' : lexer cs
 lexer ('\\':'+':cs) = TokenLiteral '+' : lexer cs
+lexer ('\\':'*':cs) = TokenLiteral '*' : lexer cs
 lexer ('(':cs) = TokenLParen : lexer cs
 lexer (')':cs) = TokenRParen : lexer cs
 lexer ('+':cs) = TokenPlus : lexer cs 
