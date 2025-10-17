@@ -18,13 +18,16 @@ removerEspacio = reverse . dropWhile isSpace . reverse . dropWhile isSpace
 parseLine :: String -> Maybe Categoria
 parseLine ('-':'-':cs) = Nothing
 parseLine "" = Nothing
-parseLine linea = Just (categoria, expresion)
-    where
-        x = removerEspacio linea
-        [c,cs] = splitOn "->" x
-        tokens = lexer (removerEspacio cs)
-        categoria = removerEspacio c
-        expresion = parseRegex tokens
+parseLine linea = 
+    case splitOn "->" (removerEspacio linea) of
+        [c,cs] ->
+            let tokens = lexer (removerEspacio cs)
+                categoria = removerEspacio c
+                expresion = parseRegex tokens
+            in Just (categoria, expresion)
+        ["",_] -> Nothing
+        [_,""] -> Nothing
+        _ -> Nothing
 
 obtenerCategoria :: [String] -> [Categoria]
 obtenerCategoria [] = []
