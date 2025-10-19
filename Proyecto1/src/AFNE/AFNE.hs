@@ -2,7 +2,7 @@ module AFNE.AFNE where
 
 import Data.Set (toList, fromList)
 import Regex.Regex
-import Regex.SpecReader
+--import Regex.SpecReader
 
 data SimboloE = SimboloE Char | Eps deriving (Eq, Ord, Show)
 type Estado = String
@@ -47,9 +47,36 @@ regexToAFNE (Star e) = AFNE estados alfabeto delta inicial finales
         inicial = inicialE
         finales = inicialE : finalesE
 
-categoriaToAFNE :: Categoria -> (String, AFNE)
-categoriaToAFNE (cat, regex) = (cat, regexToAFNE regex)
+--categoriaToAFNE :: Categoria -> (String, AFNE)
+--categoriaToAFNE (cat, regex) = (cat, regexToAFNE regex)
 
-categoriasToAFNEs :: [Categoria] -> [(String, AFNE)]
-categoriasToAFNEs = foldr ((:) . categoriaToAFNE) []
+--categoriasToAFNEs :: [Categoria] -> [(String, AFNE)]
+--categoriasToAFNEs = foldr ((:) . categoriaToAFNE) []
 
+transiciona :: AFNE -> Estado -> SimboloE -> [Estado]
+transiciona (AFNE _ _ deltaE _ _) estado simbolo =
+    concat [estadosFinales | (estadoInicial, simboloTransicion, estadosFinales) <- deltaE,
+                             estadoInicial == estado,
+                             simboloTransicion == simbolo]
+
+
+ejemploAFNE :: AFNE
+ejemploAFNE = AFNE
+    { estados = ["q0", "q1", "q2"],
+      alfabetoE = [SimboloE 'a', SimboloE 'b', Eps],
+      deltaE = [ ("q0", SimboloE 'a', ["q0", "q1"]),
+                 ("q0", Eps, ["q2"]),
+                 ("q1", SimboloE 'b', ["q2"]),
+                 ("q2", SimboloE 'a', ["q2"])
+               ],
+      inicial = "q0",
+      finales = ["q2"]
+    }
+
+-- Ejemplo de uso:
+main :: IO ()
+main = do
+    let afne = ejemploAFNE
+    print $ acepta afne "aaab"  -- Debería devolver True
+    print $ acepta afne "aaa"   -- Debería devolver True
+    print $ acepta afne "b"     -- Debería devolver False
