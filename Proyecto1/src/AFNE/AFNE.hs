@@ -4,6 +4,7 @@ import Data.Set (toList, fromList)
 import Regex.Regex
 import Regex.SpecReader
 import AFN.AFN
+import Data.List (nub)
 
 data SimboloE = SimboloE Char | Eps deriving (Eq, Ord, Show)
 type Estado = String
@@ -60,22 +61,54 @@ transiciona (AFNE _ _ deltaE _ _) estado simbolo =
                              estadoInicial == estado,
                              simboloTransicion == simbolo]
 
+-- AFNE to AFN
 
-epsilonClosure :: AFNE -> Estado -> [Estado]
-epsilonClosure afne q = epsilonClosure afne [q]
-  where 
-    epsilonClosureAux :: AFNE -> [Estado] -> [Estado]
-    epsilonClosureAux afne visitados = 
-      let alcanzables = nub $ concatMap (\p -> transiciona afne p Eps) visitados
-          nuevos = filter (notElem visitados) alcanzables
-      in if null nuevos then visitados else epsilonClosureAux nuevos ++ visitados
+afne_to_afn :: AFNE -> AFN
+afne_to_afn afne =
+  let cerradurasEpsilon = epsilonClosureAFNE afne
+      transicionesEpsilon = transicionesClosure afne cerradurasEpsilon
+      transicionesEpsilonFormateadas = [(p,c,x) | (p, SimboloE c, x) <- transicionesEpsilon]
+      alfabetoFormateado = [c | SimboloE c <- (alfabetoE afne)]
+      estadosFinales = [q | (q, qs) <- cerradurasEpsilon, any (`elem` finales afne) qs]
+  in AFN (estados afne) alfabetoFormateado (inicial afne) transicionesEpsilonFormateadas estadosFinales
+
+eClosure :: AFNE -> Estados -> Estados
+eClosure afne estadosIniciales = closureAux estadosIniciales
+  where
+    closureAux :: Estados -> Estados
+    closureAux actuales =
+      let
+        alcanzables = concatMap (\q -> transiciona afne q Eps) actuales
+        proximo = nub (actuales ++ alcanzables)
+      in
+        if length proximo == length actuales then actuales else closureAux proximo
+
 
 epsilonClosureAFNE :: AFNE -> [(Estado, [Estado])]
-epsilonClosure afne = concatMap (\p -> epsilonClosureAFNEAux afne p) (estados afne)
-  where 
-    epsilonClosureAFNEAux :: AFNE -> Estado -> (Estado, [Estado])
-    epsilonClosureAFNEAux a q = (q, epsilonClosure a q)
+epsilonClosureAFNE afne = map (\q -> (q, eClosure afne [q])) (estados afne)
 
+transicionesClosure :: AFNE -> [(Estado, [Estado])] -> DeltaE
+transicionesClosure afne cerradurasEpsilon =
+  filter (\(estado, simbolo, estadosL) -> if simbolo == Eps || estadosL == [] then False  else True) (concat (map (\(q,qs) ->  (map (\a -> (q,a,(nub (concat ( map (\x -> getEpsilonClosure cerradurasEpsilon x) (nub (concat (map (\p -> (transiciona afne p a)) qs))) )) ))) (alfabetoE afne) ) ) cerradurasEpsilon))
+
+                                             
+getEpsilonClosure :: [(Estado, Estados)] -> Estado -> Estados
+getEpsilonClosure [] _ = []
+getEpsilonClosure ((q, qs):xs) s = if s == q then qs else getEpsilonClosure xs s 
+
+afnePrueba :: AFNE
+afnePrueba = AFNE
+  { estados = ["q0", "q1", "q2"],
+    alfabetoE = [SimboloE 'a', SimboloE 'b', SimboloE 'c', Eps],
+    deltaE = [("q0", SimboloE 'a', ["q0"]),
+            ("q0", Eps, ["q1"]),
+            ("q1", SimboloE 'b', ["q1"]),
+            ("q1", Eps, ["q2"]),
+            ("q2", SimboloE 'c', ["q2"])
+           ],
+    inicial = "q0",
+    finales = ["q0", "q1", "q2"]
+  }
 
 ejemploAFNE :: AFNE
 ejemploAFNE = AFNE
@@ -90,10 +123,3 @@ ejemploAFNE = AFNE
       finales = ["q2"]
     }
 
--- Ejemplo de uso:
-main :: IO ()
-main = do
-    let afne = ejemploAFNE
-    print $ acepta afne "aaab"  -- Debería devolver True
-    print $ acepta afne "aaa"   -- Debería devolver True
-    print $ acepta afne "b"     -- Debería devolver False
