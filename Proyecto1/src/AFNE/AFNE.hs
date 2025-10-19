@@ -2,7 +2,8 @@ module AFNE.AFNE where
 
 import Data.Set (toList, fromList)
 import Regex.Regex
---import Regex.SpecReader
+import Regex.SpecReader
+import AFN.AFN
 
 data SimboloE = SimboloE Char | Eps deriving (Eq, Ord, Show)
 type Estado = String
@@ -47,17 +48,33 @@ regexToAFNE (Star e) = AFNE estados alfabeto delta inicial finales
         inicial = inicialE
         finales = inicialE : finalesE
 
---categoriaToAFNE :: Categoria -> (String, AFNE)
---categoriaToAFNE (cat, regex) = (cat, regexToAFNE regex)
+categoriaToAFNE :: Categoria -> (String, AFNE)
+categoriaToAFNE (cat, regex) = (cat, regexToAFNE regex)
 
---categoriasToAFNEs :: [Categoria] -> [(String, AFNE)]
---categoriasToAFNEs = foldr ((:) . categoriaToAFNE) []
+categoriasToAFNEs :: [Categoria] -> [(String, AFNE)]
+categoriasToAFNEs = foldr ((:) . categoriaToAFNE) []
 
 transiciona :: AFNE -> Estado -> SimboloE -> [Estado]
 transiciona (AFNE _ _ deltaE _ _) estado simbolo =
     concat [estadosFinales | (estadoInicial, simboloTransicion, estadosFinales) <- deltaE,
                              estadoInicial == estado,
                              simboloTransicion == simbolo]
+
+
+epsilonClosure :: AFNE -> Estado -> [Estado]
+epsilonClosure afne q = epsilonClosure afne [q]
+  where 
+    epsilonClosureAux :: AFNE -> [Estado] -> [Estado]
+    epsilonClosureAux afne visitados = 
+      let alcanzables = nub $ concatMap (\p -> transiciona afne p Eps) visitados
+          nuevos = filter (notElem visitados) alcanzables
+      in if null nuevos then visitados else epsilonClosureAux nuevos ++ visitados
+
+epsilonClosureAFNE :: AFNE -> [(Estado, [Estado])]
+epsilonClosure afne = concatMap (\p -> epsilonClosureAFNEAux afne p) (estados afne)
+  where 
+    epsilonClosureAFNEAux :: AFNE -> Estado -> (Estado, [Estado])
+    epsilonClosureAFNEAux a q = (q, epsilonClosure a q)
 
 
 ejemploAFNE :: AFNE
