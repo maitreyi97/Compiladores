@@ -1,6 +1,6 @@
 module AFN.AFN where
 
-import Data.List (nub)
+import Data.List (nub, sort, intercalate)
 import AFD.AFD
 
 data AFN = AFN
@@ -39,19 +39,52 @@ auxiliarTransicion ((estadoInicial, caracter, estadoFinal):cs) estadoActual simb
 -- Se limpian las transiciones para que podramos generar nuevas transiciones a partir de los estados factibles y la tabla de transiciones.
 -- Se formatean las cadenas de tal forma que formen un automata.
 
+-- En AFN/AFN.hs
+-- ... (tus otras funciones como aceptaAFN, etc. van aquí arriba)
+
+-- ==========================================================
+-- VERSIÓN CORREGIDA DE afn_afd
+-- ==========================================================
 afn_afd :: AFN -> AFD
-afn_afd (AFN estados alfabeto estadoInicial transiciones estadosFinales) =
-  let potenciaEstados = conjuntoPotencia estados
-      tablaTransiciones = transicionesPotencia transiciones potenciaEstados alfabeto
-      estadosFactibles = estadosAlcanzables tablaTransiciones [[estadoInicial]] [[estadoInicial]]
-      nuevosEstadosFinales = (filter (\x -> (or (map (\y -> (y `elem` x)) estadosFinales ))) estadosFactibles)
-      transicionesFinales = filter (\(x,_,_) -> x `elem` estadosFactibles) tablaTransiciones
-      estadosFactiblesFormateados = (map (\s -> (concat s)) estadosFactibles)
-      transicionesFinalesFormateadas = (map (\(s0,c, s1) -> ((concat s0), c, (concat s1) )) transicionesFinales)
-      nuevosEstadosFinalesFormateados  = (map (\s -> (concat s)) nuevosEstadosFinales)
-      in (AFD estadosFactiblesFormateados alfabeto estadoInicial transicionesFinalesFormateadas nuevosEstadosFinalesFormateados)
+afn_afd (AFN estados afnAlfabeto q0 afnTransiciones afnFinales) =
+  let
+    q0_afd = nub $ sort [q0]
 
+    -- Función principal que explora los estados del AFD recursivamente.
+    -- `pendientes`: lista de estados del AFD (que son `[String]`) que necesitamos procesar.
+    -- `descubiertos`: lista de todos los estados del AFD que ya hemos encontrado.
+    -- `transicionesAcc`: acumulador para las transiciones del nuevo AFD.
+    
+    -- CORRECCIÓN: Se ajustó la firma de tipo para que coincida con la lógica.
+    explorar :: [[String]] -> [[String]] -> [([String], Char, [String])] -> ([[String]], [([String], Char, [String])])
+    explorar [] descubiertos transicionesAcc = (descubiertos, transicionesAcc)
+    explorar (q_actual:pendientes) descubiertos transicionesAcc =
+      let
+        nuevasTransiciones = map (\simbolo ->
+            let destino = nub $ sort $ concatMap (\sub_q -> auxiliarTransicion afnTransiciones sub_q simbolo) q_actual
+            in (q_actual, simbolo, destino)
+          ) afnAlfabeto
 
+        nuevosDescubiertos = nub $ filter (\q -> not (null q) && not (q `elem` descubiertos)) (map (\(_,_,d) -> d) nuevasTransiciones)
+
+      in explorar (pendientes ++ nuevosDescubiertos) (descubiertos ++ nuevosDescubiertos) (transicionesAcc ++ nuevasTransiciones)
+
+    -- Inicia la exploración.
+    (estadosAlcanzables, transicionesAFD_sin_formato) = explorar [q0_afd] [q0_afd] []
+
+    finalesAFD = filter (\q_afd -> any (`elem` afnFinales) q_afd) estadosAlcanzables
+
+    -- Formateamos los estados (conjuntos de strings) a un único string para cumplir con el tipo AFD.
+    formatEstado = intercalate "" . sort
+    estadosAFD_formateados = map formatEstado estadosAlcanzables
+    inicialAFD_formateado = formatEstado q0_afd
+    
+    -- CORRECCIÓN: Se aplica el formato a la lista de transiciones correcta.
+    transicionesAFD_formateadas = map (\(q1, s, q2) -> (formatEstado q1, s, formatEstado q2)) transicionesAFD_sin_formato
+    
+    finalesAFD_formateados = map formatEstado finalesAFD
+
+  in AFD estadosAFD_formateados afnAlfabeto inicialAFD_formateado transicionesAFD_formateadas finalesAFD_formateados
 -- | Función encargada de revisar que estados son alcanzables a partir de una lista de transiciones y un estado inicial.
 -- Prueba recursivamente los estados que son alcanzables, una vez que hemos alcanzado un nuevo estado se añade a la lista de estados alcanzados y posteriormente si ya no quedan estados por verificar se termina la función regresando todos los estados alcanzados. 
 -- estadosAlcanzables :: Transiciones -> EstadosActuales -> EstadosVistos -> EstadosAlcanzables
