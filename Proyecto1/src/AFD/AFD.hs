@@ -119,3 +119,4 @@ sinCambios :: [(String, [String])] -> [(String, [String])] -> Bool
 sinCambios [] [] = True
 sinCambios ((p, listaQ):xs) ((p2, listaQ2):ys) = if p == p2 && listaQ == listaQ2 then
         (sinCambios xs ys) else False
+
