@@ -10,44 +10,51 @@ data SimboloE = SimboloE Char | Eps deriving (Eq, Ord, Show)
 type Estado = String
 type Estados = [Estado]
 type AlfabetoE = [SimboloE]
-type DeltaE = [(Estado, SimboloE, [Estado])]
 type Inicial = Estado
+type DeltaE = [(Estado, SimboloE, [Estado])]    
 type Finales = [Estado]
 
 data AFNE = AFNE
     { estados :: Estados,
      alfabetoE :: AlfabetoE,
-     deltaE :: DeltaE,
      inicial :: Inicial,
+     deltaE :: DeltaE,
      finales :: Finales
     } deriving (Show)
 
 regexToAFNE :: RegEx -> AFNE
-regexToAFNE Epsilon = AFNE ["q0", "q1"] [Eps] [("q0", Eps, ["q1"])] "q0" ["q1"]
-regexToAFNE (Literal c) = AFNE ["q0", "q1"] [SimboloE c] [("q0", SimboloE c, ["q1"])] "q0" ["q1"]
-regexToAFNE (Concat l r) = AFNE estados alfabeto delta inicial finales
-  where AFNE estadosL alfabetoL deltaL inicialL finalesL = regexToAFNE l
-        AFNE estadosR alfabetoR deltaR inicialR finalesR = regexToAFNE r
+regexToAFNE Epsilon = AFNE ["q0", "q1"] [Eps] "q0" [("q0", Eps, ["q1"])] ["q1"]
+regexToAFNE (Literal c) = AFNE ["q0", "q1"] [SimboloE c] "q0" [("q0", SimboloE c, ["q1"])]  ["q1"]
+regexToAFNE (Concat l r) = AFNE estados alfabeto inicial delta finales
+  where AFNE estadosL alfabetoL inicialL deltaL finalesL = regexToAFNE l
+        AFNE estadosR alfabetoR inicialR deltaR finalesR = regexToAFNE r
         estados = toList $ fromList (estadosL ++ estadosR)
         alfabeto = toList $ fromList (alfabetoL ++ alfabetoR)
         delta = deltaL ++ deltaR ++ [(finalL, Eps, [inicialR]) | finalL <- finalesL]
         inicial = inicialL
         finales = finalesR
-regexToAFNE (Or l r) = AFNE estados alfabeto delta inicial finales
-  where AFNE estadosL alfabetoL deltaL inicialL finalesL = regexToAFNE l
-        AFNE estadosR alfabetoR deltaR inicialR finalesR = regexToAFNE r
+regexToAFNE (Or l r) = AFNE estados alfabeto inicial delta finales
+  where AFNE estadosL alfabetoL inicialL deltaL finalesL = regexToAFNE l
+        AFNE estadosR alfabetoR inicialR deltaR finalesR = regexToAFNE r
         estados = toList $ fromList ("q_0" : estadosL ++ estadosR)
         alfabeto = toList $ fromList (alfabetoL ++ alfabetoR)
         delta = deltaL ++ deltaR ++ [("q_0", Eps, [inicialL]), ("q_0", Eps, [inicialR])]
         inicial = "q_0"
         finales = finalesL ++ finalesR
-regexToAFNE (Star e) = AFNE estados alfabeto delta inicial finales
-  where AFNE estadosE alfabetoE deltaE inicialE finalesE = regexToAFNE e
+regexToAFNE (Star e) = AFNE estados alfabeto inicial delta finales
+  where AFNE estadosE alfabetoE inicialE deltaE finalesE = regexToAFNE e
         estados = estadosE
         alfabeto = alfabetoE
         delta = deltaE ++ [ (finalE, Eps, [inicialE]) | finalE <- finalesE ]
         inicial = inicialE
         finales = inicialE : finalesE
+regexToAFNE (Plus e) = AFNE estados alfabeto inicial delta finales
+  where AFNE estadosE alfabetoE inicialE deltaE finalesE = regexToAFNE e
+        estados = estadosE
+        alfabeto = alfabetoE
+        delta = deltaE ++ [ (finalE, Eps, [inicialE]) | finalE <- finalesE ]
+        inicial = inicialE
+        finales = finalesE
 
 categoriaToAFNE :: Categoria -> (String, AFNE)
 categoriaToAFNE (cat, regex) = (cat, regexToAFNE regex)
@@ -56,7 +63,7 @@ categoriasToAFNEs :: [Categoria] -> [(String, AFNE)]
 categoriasToAFNEs = foldr ((:) . categoriaToAFNE) []
 
 transiciona :: AFNE -> Estado -> SimboloE -> [Estado]
-transiciona (AFNE _ _ deltaE _ _) estado simbolo =
+transiciona (AFNE _ _ _ deltaE _) estado simbolo =
     concat [estadosFinales | (estadoInicial, simboloTransicion, estadosFinales) <- deltaE,
                              estadoInicial == estado,
                              simboloTransicion == simbolo]
@@ -136,7 +143,8 @@ ejemploAFNE = AFNE
       deltaE = [ ("q0", SimboloE 'a', ["q0", "q1"]),
                  ("q0", Eps, ["q2"]),
                  ("q1", SimboloE 'b', ["q2"]),
-                 ("q2", SimboloE 'a', ["q2"])
+                 ("q2", SimboloE 'a', ["q2"]),
+                 ("q2", Eps, ["q0"])
                ],
       inicial = "q0",
       finales = ["q2"]
