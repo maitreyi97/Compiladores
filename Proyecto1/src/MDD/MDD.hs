@@ -14,4 +14,5 @@ data MDD = MDD {
     mu :: [(Estado, Categoria)],             
     errorLexico :: Categoria                
 } deriving (Show)
-  
+
+-- 
