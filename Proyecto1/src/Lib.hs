@@ -1,6 +1,8 @@
+import Regex.SpecReader
+import Regex.Regex
+import MDD.MDD
 import AFD.AFD
 import AFN.AFN
-
 
 afdParDeAs = AFD
         ["q0", "q1"]
