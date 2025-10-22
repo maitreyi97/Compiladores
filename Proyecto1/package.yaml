@@ -35,7 +35,11 @@ ghc-options:
 
 library:
   source-dirs: src
-
+  dependencies:
+    - array
+    - split
+    - containers
+  
 executables:
   Proyecto1-exe:
     main:                Main.hs

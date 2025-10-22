@@ -144,3 +144,10 @@ muEstrella mdd w =
             case w of
                 (x:xs) -> (simboloError mdd, [x]) : muEstrella mdd xs
 
+ignorados :: [String]
+ignorados = ["Comentarios", "Espacio"]
+
+tokens :: MDD -> String -> [(String, String)]
+tokens mdd cadena =
+  let tokensSinFiltrar = muEstrella mdd cadena
+  in filter (\(cat, lex) -> not (cat `elem` ignorados)) tokensSinFiltrar

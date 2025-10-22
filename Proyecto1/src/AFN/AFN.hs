@@ -41,37 +41,34 @@ auxiliarTransicion ((estadoInicial, caracter, estadoFinal):cs) estadoActual simb
 
 afn_afd :: AFN -> AFD
 afn_afd (AFN estados alfabeto estadoInicial transiciones estadosFinales) =
-  let potenciaEstados = conjuntoPotencia estados
+  let potenciaEstados = estadosAlcanzables transiciones alfabeto [[estadoInicial]] [[estadoInicial]]
       tablaTransiciones = transicionesPotencia transiciones potenciaEstados alfabeto
-      estadosFactibles = estadosAlcanzables tablaTransiciones [[estadoInicial]] [[estadoInicial]]
-      nuevosEstadosFinales = (filter (\x -> (or (map (\y -> (y `elem` x)) estadosFinales ))) estadosFactibles)
-      transicionesFinales = filter (\(x,_,_) -> x `elem` estadosFactibles) tablaTransiciones
-      estadosFactiblesFormateados = (map (\s -> (concat s)) estadosFactibles)
-      transicionesFinalesFormateadas = (map (\(s0,c, s1) -> ((concat s0), c, (concat s1) )) transicionesFinales)
+      nuevosEstadosFinales = (filter (\x -> (or (map (\y -> (y `elem` x)) estadosFinales ))) potenciaEstados)
+      estadosFactiblesFormateados = (map (\s -> (concat s)) potenciaEstados)
+      transicionesFinalesFormateadas = (map (\(s0,c, s1) -> ((concat s0), c, (concat s1) )) tablaTransiciones)
       nuevosEstadosFinalesFormateados  = (map (\s -> (concat s)) nuevosEstadosFinales)
       in (AFD estadosFactiblesFormateados alfabeto estadoInicial transicionesFinalesFormateadas nuevosEstadosFinalesFormateados)
+
+estadosAlcanzables :: [(String, Char, [String])] -> [Char]  -> [[String]] -> [[String]] -> [[String]]
+estadosAlcanzables _ _ [] alcanzados = alcanzados
+estadosAlcanzables transiciones alfabeto estadosActuales alcanzados =
+  let estadosSiguientes = nub (concat (map (\q -> auxiliar transiciones alfabeto q) estadosActuales))
+      estadosNuevos = filter (\q -> (not (null q) && (not (q `elem` alcanzados)))) estadosSiguientes
+  in estadosAlcanzables transiciones alfabeto estadosNuevos (nub (estadosNuevos ++ alcanzados))
+  where
+    auxiliar :: [(String, Char, [String])] -> [Char] -> [String] -> [[String]]
+    auxiliar transiciones alfabeto estados =
+      map (\a -> nub (transicionAFN transiciones estados [a])) alfabeto
 
 
 -- | Función encargada de revisar que estados son alcanzables a partir de una lista de transiciones y un estado inicial.
 -- Prueba recursivamente los estados que son alcanzables, una vez que hemos alcanzado un nuevo estado se añade a la lista de estados alcanzados y posteriormente si ya no quedan estados por verificar se termina la función regresando todos los estados alcanzados. 
 -- estadosAlcanzables :: Transiciones -> EstadosActuales -> EstadosVistos -> EstadosAlcanzables
-estadosAlcanzables :: [([String], Char, [String])] -> [[String]] -> [[String]] -> [[String]]
-estadosAlcanzables _ [] alcanzados = alcanzados
-estadosAlcanzables transiciones estadosActuales alcanzados =
-  let estadosSiguientes = concat (nub (map (\q -> estadoAlcanzableAux transiciones q) estadosActuales))
-      estadosNuevos = filter (\q -> (not (null q) && (not (q `elem` alcanzados)))) estadosSiguientes
-  in estadosAlcanzables transiciones estadosNuevos (nub (estadosNuevos ++ alcanzados))
+
+-- Punto de control :: Eliminacion de una función 
   
 --- | Funcion auxiliar de estados alcanzables, regresa los estados alcanzados a partir de un estado en particular. 
-estadoAlcanzableAux :: [([String], Char, [String])] -> [String] -> [[String]]
-estadoAlcanzableAux transiciones estado = nub (map (\(s,_,f) -> if s == estado then f else []) transiciones)
 
--- | Regresa el conjunto potencia de los estados
--- conjuntoPotencia :: Estados -> ConjuntoPotenciaDeLosEstados
-conjuntoPotencia :: [String] -> [[String]]
-conjuntoPotencia [] = [[]]
-conjuntoPotencia (estado:resto) = let restoPotencia = conjuntoPotencia(resto) in
-  nub (restoPotencia ++ (map (\x -> estado:x) restoPotencia))
 
 -- | Función encargada de regresar las nuevas transiciones que pueden obtenerse haciendo uso de una función auxiliar para poder sacar las transiciones potencia de todo el alfabeto 
 -- transicionesPotencia :: Transiciones -> PotenciaDeEstados -> Alfabeto -> EstadosResultantes
