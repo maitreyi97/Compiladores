@@ -134,20 +134,33 @@ prefijoMaximo mdd w =
             in Just (x_max, sufijo, catNombre)
         Nothing -> Nothing
 
+consumirComentario :: String -> (String, String) -> (String, String)
+consumirComentario "" (conComentario, sinComentario) = (conComentario, sinComentario)
+consumirComentario ('\n':resto) (conComentario, sinComentario) = (conComentario, sinComentario ++ resto) 
+consumirComentario (a:as) (conComentario, sinComentario) = consumirComentario as (conComentario ++ [a], sinComentario)
+
 muEstrella :: MDD -> String -> [(String, String)]
 muEstrella mdd [] = []
 muEstrella mdd w =
     case prefijoMaximo mdd w of
+        Just (lexema, resto,"Comentarios") ->
+            let
+              consumido = consumirComentario resto (lexema, "")
+              newLex = fst consumido
+              newRes = snd consumido
+            in ("Comentarios", newLex) : muEstrella mdd newRes
         Just (lexema, resto, cat) ->
             (cat, lexema) : muEstrella mdd resto
         Nothing ->
             case w of
+                (' ':xs) -> muEstrella mdd xs
+                ('\n':xs) -> muEstrella mdd xs
+                ('\t':xs) -> muEstrella mdd xs
                 (x:xs) -> (simboloError mdd, [x]) : muEstrella mdd xs
 
 ignorados :: [String]
 ignorados = ["Comentarios", "Espacio"]
 
 tokens :: MDD -> String -> [(String, String)]
-tokens mdd cadena =
-  let tokensSinFiltrar = muEstrella mdd cadena
-  in filter (\(cat, lex) -> not (cat `elem` ignorados)) tokensSinFiltrar
+tokens mdd cadena = muEstrella mdd cadena
+  
