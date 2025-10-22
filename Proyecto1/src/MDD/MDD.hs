@@ -155,6 +155,7 @@ muEstrella mdd w =
             case w of
                 (' ':xs) -> muEstrella mdd xs
                 ('\n':xs) -> muEstrella mdd xs
+                ('\t':xs) -> muEstrella mdd xs
                 (x:xs) -> (simboloError mdd, [x]) : muEstrella mdd xs
 
 ignorados :: [String]
