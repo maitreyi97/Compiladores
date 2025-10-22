@@ -26,7 +26,13 @@ source-repository head
 library
   exposed-modules:
       AFD.AFD
-      Lib
+      AFN.AFN
+      AFNE.AFNE
+      Lexer.Lexer
+      MDD.MDD
+      Regex.Regex
+      Regex.RegexParser
+      Regex.SpecReader
   other-modules:
       Paths_Proyecto1
   autogen-modules:
@@ -35,7 +41,10 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
+    , containers
+    , split
   default-language: Haskell2010
 
 executable Proyecto1-exe
