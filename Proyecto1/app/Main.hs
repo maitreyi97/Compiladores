@@ -16,4 +16,4 @@ main = do
         mapM_ print tokens
         putStrLn "------------------------"
       _ -> do
-        putStrLn "Argumentos: <Archivo especificaciones> <Archivo Codigo>"
+        putStrLn "Argumentos: <Archivo especificación> <Archivo Código>"
