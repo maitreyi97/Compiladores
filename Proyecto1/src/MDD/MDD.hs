@@ -8,7 +8,7 @@ import AFN.AFN
 import Data.List 
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Maybe (fromJust, isJust, catMaybes)
+import Data.Maybe (catMaybes)
 
 type EstadoMDD = String
 type Simbolo = Char
@@ -29,16 +29,16 @@ construirMDD :: [Categoria] -> MDD
 construirMDD categorias =
   let
     afdsMinimizados = map (\(nombre, regex) -> (nombre, (renombrarAFD (generarAFDMin regex) (nombre ++ "_")))) categorias
-    mapFinalesACat = Map.fromList (concatMap (\(nombre, (AFD _ _ _ _ finales)) -> (map (\q -> (q, nombre)) finales)) afdsMinimizados)
+    mapFinalesACat = Map.fromList (concatMap (\(nombre, (AFD _ _ _ _ finals)) -> (map (\q -> (q, nombre)) finals)) afdsMinimizados)
     unificado =  afn_afd (afne_to_afn (unificarAFDs afdsMinimizados "mdd_inicial"))
     (estadosFinales, mu) = construirFuncionMu (getFinales unificado) mapFinalesACat (map fst categorias)
   in  aux unificado mu estadosFinales
   where
     aux :: AFD -> Map String CategoriaNombre -> [String] -> MDD
-    aux (AFD estados alfabeto estadoInicial transiciones estadoFinal) fmu nuevosFinales =
+    aux (AFD estds alfabeto estadoInicial transiciones _) fmu nuevosFinales =
       MDD
       {
-        estadosMDD = estados,
+        estadosMDD = estds,
         alfabetoMDD = alfabeto,
         transicionesMDD = transiciones,
         estadoInicialMDD = estadoInicial, 
@@ -56,9 +56,9 @@ generarAFDMin regex = minimizarAFD (afn_afd (afne_to_afn (regexToAFNE regex)))
 
 
 renombrarAFD :: AFD -> String -> AFD
-renombrarAFD (AFD estados alfabeto estadoInicial transiciones estadoFinal ) prefijo =
+renombrarAFD (AFD estds alfabeto estadoInicial transiciones estdFinal ) prefijo =
   let ren e = prefijo ++ e
-  in (AFD (map ren estados) alfabeto (ren estadoInicial) (map (\(e1, s, e2) -> (ren e1, s, ren e2)) transiciones) (map ren estadoFinal))
+  in (AFD (map ren estds) alfabeto (ren estadoInicial) (map (\(e1, s, e2) -> (ren e1, s, ren e2)) transiciones) (map ren estdFinal))
 
 unificarAFDs :: [(String, AFD)] -> String -> AFNE
 unificarAFDs categorias nuevoInicial =
@@ -73,7 +73,7 @@ unificarAFDs categorias nuevoInicial =
 -- 
 
 construirFuncionMu :: [String] -> Map String CategoriaNombre -> [CategoriaNombre] -> ([String], Map String CategoriaNombre)
-construirFuncionMu estadosFinalesMDD mapaFinalesCategoria ordenCategorias =
+construirFuncionMu estdsFinalesMDD mapaFinalesCategoria ordenCategorias =
   let
     mapeo = map (\ef ->
                    let
@@ -84,27 +84,27 @@ construirFuncionMu estadosFinalesMDD mapaFinalesCategoria ordenCategorias =
                                                  ) ordenCategorias)
                      categoriaFinal = head categorias
                    in (ef, categoriaFinal)
-                ) estadosFinalesMDD
+                ) estdsFinalesMDD
     nuevosFinales = map fst mapeo
     funcionMuMap = Map.fromList mapeo
   in (nuevosFinales, funcionMuMap)
       
 transicionMDD :: MDD -> EstadoMDD -> Simbolo -> Maybe EstadoMDD
-transicionMDD mdd estado simbolo = buscarTransicion (transicionesMDD mdd)
+transicionMDD mdd estado simbolo = buscar (transicionesMDD mdd)
   where
-    buscarTransicion [] = Nothing
-    buscarTransicion ((e1, s, e2):rest)
+    buscar [] = Nothing
+    buscar ((e1, s, e2):rest)
         | e1 == estado && s == simbolo = Just e2
-        | otherwise = buscarTransicion rest
+        | otherwise = buscar rest
 
 transicionExtendida :: MDD -> String -> Maybe EstadoMDD
 transicionExtendida mdd cadena = 
     transicionExtendidaAux mdd (estadoInicialMDD mdd) cadena
   where
     transicionExtendidaAux _ estado [] = Just estado
-    transicionExtendidaAux mdd estado (x:xs) =
-        case transicionMDD mdd estado x of
-            Just next -> transicionExtendidaAux mdd next xs
+    transicionExtendidaAux m estado (x:xs) =
+        case transicionMDD m estado x of
+            Just next -> transicionExtendidaAux m next xs
             Nothing -> Nothing
 
 ---Función auxiliar
@@ -140,7 +140,7 @@ consumirComentario ('\n':resto) (conComentario, sinComentario) = (conComentario,
 consumirComentario (a:as) (conComentario, sinComentario) = consumirComentario as (conComentario ++ [a], sinComentario)
 
 muEstrella :: MDD -> String -> [(String, String)]
-muEstrella mdd [] = []
+muEstrella _ [] = []
 muEstrella mdd w =
     case prefijoMaximo mdd w of
         Just (lexema, resto,"Comentarios") ->
