@@ -1,5 +1,12 @@
 module Regex.Regex where
 
+-- Representación de Expresiones Regulares
+-- Epsilon: representa la cadena vacía
+-- Literal c: representa el carácter c
+-- Or r1 r2: representa la disyunción entre las expresiones r1 y r2
+-- Concat r1 r2: representa la concatenación de las expresiones r1 y r2
+-- Star r: representa la clausura de Kleene de la expresión r
+-- Plus r: representa una o más repeticiones de la expresión r
 data RegEx = Epsilon 
             | Literal Char
             | Or RegEx RegEx

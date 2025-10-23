@@ -35,6 +35,7 @@ Base          : literal                      { Literal $1 }
               | '(' Disyuncion ')'           { $2 }
 
 {
+-- Definicmos los tokens en Haskell.
 data Token = TokenLParen
                   | TokenRParen
                   | TokenPlus
@@ -43,7 +44,7 @@ data Token = TokenLParen
                   | TokenLiteral Char
                   | TokenEOF
                   deriving Show 
--- Definimos el Lexer de texto a token para luego transformar a algo basado en reglas.
+-- Definimos el erroren caso de no enconetrar una expresión válida.
 parseError :: [Token] -> a
 parseError _ = error "Parse error"
 
