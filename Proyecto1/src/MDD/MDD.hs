@@ -96,6 +96,8 @@ construirFuncionMu estadosFinalesMDD mapaFinalesCategoria ordenCategorias =
     funcionMuMap = Map.fromList mapeo
   in (nuevosFinales, funcionMuMap)
       
+-- Funciones de transición del MDD
+-- Función de transición del MDD que busca la transición correspondiente al estado y símbolo dados
 transicionMDD :: MDD -> EstadoMDD -> Simbolo -> Maybe EstadoMDD
 transicionMDD mdd estado simbolo = buscarTransicion (transicionesMDD mdd)
   where
@@ -104,7 +106,7 @@ transicionMDD mdd estado simbolo = buscarTransicion (transicionesMDD mdd)
         | e1 == estado && s == simbolo = Just e2
         | otherwise = buscarTransicion rest
 
-transicionExtendida :: MDD -> String -> Maybe EstadoMDD
+-- Función de transición extendida del MDD que procesa una cadena completa desde un estado inicial
 transicionExtendida mdd cadena = 
     transicionExtendidaAux mdd (estadoInicialMDD mdd) cadena
   where
@@ -114,12 +116,11 @@ transicionExtendida mdd cadena =
             Just next -> transicionExtendidaAux mdd next xs
             Nothing -> Nothing
 
----Función auxiliar
--- 
+-- Función auxiliar para obtener el nombre de una categoría a partir del par
 nombreCategoria :: Categoria -> String
 nombreCategoria (nombre, _) = nombre
 
--- 
+-- Función que implementa la regla del prefijo más largo
 prefijoMaximo :: MDD -> String -> Maybe (String, String, String)
 prefijoMaximo mdd w =
     let
@@ -132,7 +133,7 @@ prefijoMaximo mdd w =
                     case Map.lookup q (funcionMu mdd) of
                         Just _ -> True
                         Nothing -> False
-                Nothing -> False -- No llegó a un estado
+                Nothing -> False 
     
     in case prefijo of
         Just x_max ->
@@ -143,11 +144,13 @@ prefijoMaximo mdd w =
             in Just (x_max, sufijo, catNombre)
         Nothing -> Nothing
 
+-- Función auxiliar para el manejo de comentario multilínea o de carácteres múltiples
 consumirComentario :: String -> (String, String) -> (String, String)
 consumirComentario "" (conComentario, sinComentario) = (conComentario, sinComentario)
 consumirComentario ('\n':resto) (conComentario, sinComentario) = (conComentario, sinComentario ++ resto) 
 consumirComentario (a:as) (conComentario, sinComentario) = consumirComentario as (conComentario ++ [a], sinComentario)
 
+-- Función que realiza la segmentación de la cadena en tokens
 muEstrella :: MDD -> String -> [(String, String)]
 muEstrella mdd [] = []
 muEstrella mdd w =
@@ -167,9 +170,11 @@ muEstrella mdd w =
                 ('\t':xs) -> muEstrella mdd xs
                 (x:xs) -> (simboloError mdd, [x]) : muEstrella mdd xs
 
+-- Lista de categorías que deben ser ignoradas en el resultado final
 ignorados :: [String]
 ignorados = ["Comentarios", "Espacio"]
 
+-- Función que realiza el análisis léxico de la cadena utilizando la MDD
 tokens :: MDD -> String -> [(String, String)]
 tokens mdd cadena = muEstrella mdd cadena
   
