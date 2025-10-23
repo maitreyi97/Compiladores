@@ -15,16 +15,18 @@ type Simbolo = Char
 type CategoriaNombre = String 
 
 data MDD = MDD {
-    estadosMDD :: [EstadoMDD],                   
-    alfabetoMDD :: [Simbolo],                       
-    transicionesMDD :: [(EstadoMDD, Simbolo, EstadoMDD)],  
-    estadoInicialMDD :: EstadoMDD,                
-    estadosFinalesMDD :: [EstadoMDD],             
-    funcionMu :: Map EstadoMDD CategoriaNombre,        
-    simboloError :: String                        
+    estadosMDD :: [EstadoMDD], -- estados del MDD             
+    alfabetoMDD :: [Simbolo], -- alfabeto del MDD                
+    transicionesMDD :: [(EstadoMDD, Simbolo, EstadoMDD)],  -- transiciones del MDD
+    estadoInicialMDD :: EstadoMDD,  --nuevo estado inicial que creamos para contruir el MDD              
+    estadosFinalesMDD :: [EstadoMDD],  -- nuevos estados finales del MDD           
+    funcionMu :: Map EstadoMDD CategoriaNombre,  -- función mu que mapea estados finales a nombres de categorías      
+    simboloError :: String -- símbolo de error para manejar cadenas no reconocidas o indicar un error léxico                       
 } deriving (Show)
 
-
+-- Función que construye el MDD a partir de una lista de categorías (nombre y expresión regular)
+-- Vamos a generar un AFD minimizado para cada categoría reenombrado para evitar conflictos
+-- 
 construirMDD :: [Categoria] -> MDD
 construirMDD categorias =
   let
@@ -47,19 +49,23 @@ construirMDD categorias =
         simboloError = "ErrorLexico"
       }
 
-
+-- Función que obtiene los estados finales de un AFD
+-- Regresa una lista con los estados finales
 getFinales :: AFD -> [String]
 getFinales (AFD _ _ _ _ q) = q
 
+-- Función que genera un AFD minimizado a partir de una expresión regular
 generarAFDMin :: RegEx -> AFD
 generarAFDMin regex = minimizarAFD (afn_afd (afne_to_afn (regexToAFNE regex)))
 
-
+-- Función que renombra los estados de un AFD con un prefijo
 renombrarAFD :: AFD -> String -> AFD
 renombrarAFD (AFD estados alfabeto estadoInicial transiciones estadoFinal ) prefijo =
   let ren e = prefijo ++ e
   in (AFD (map ren estados) alfabeto (ren estadoInicial) (map (\(e1, s, e2) -> (ren e1, s, ren e2)) transiciones) (map ren estadoFinal))
 
+-- Función que unifica varios AFDs en un solo AFNE
+-- Agrega un nuevo estado inicial con transiciones epsilon a los estados iniciales de cada AFD
 unificarAFDs :: [(String, AFD)] -> String -> AFNE
 unificarAFDs categorias nuevoInicial =
   let
@@ -71,7 +77,8 @@ unificarAFDs categorias nuevoInicial =
     todosFinales = nub (concatMap (\(AFD _ _ _ _ fs) -> fs) afds)
   in (AFNE todosLosEstados todosLosAlfabetos nuevoInicial (transicionesOriginales ++ transicionesEpsilon) todosFinales)     
 -- 
-
+-- Función que construye la función mu del MDD
+-- 
 construirFuncionMu :: [String] -> Map String CategoriaNombre -> [CategoriaNombre] -> ([String], Map String CategoriaNombre)
 construirFuncionMu estadosFinalesMDD mapaFinalesCategoria ordenCategorias =
   let
@@ -108,9 +115,11 @@ transicionExtendida mdd cadena =
             Nothing -> Nothing
 
 ---Función auxiliar
+-- 
 nombreCategoria :: Categoria -> String
 nombreCategoria (nombre, _) = nombre
 
+-- 
 prefijoMaximo :: MDD -> String -> Maybe (String, String, String)
 prefijoMaximo mdd w =
     let

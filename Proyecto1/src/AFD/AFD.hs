@@ -31,7 +31,7 @@ buscarTransicion ((estadoInicial, caracter, estadoFinal):xs) estado simbolo
   | otherwise = buscarTransicion xs estado simbolo
 
 -- | Función encargada de minimizar el AFD
--- La función comienza generando los pares de estados a partir de ls lista de estados, para despues revisar cuales de estos pares pertenece alguno a un estado final.
+-- La función comienza generando los pares de estados a partir de la lista de estados, para despues revisar cuales de estos pares pertenece alguno a un estado final.
 -- Posteriormente genera el resto de la tabla. Después genera los nuevos Estados a partir de los representantes de cada conjunto de estados que son equivalentes.
 -- Posteriormente a partir de estos nuevos estados y los pares encontrados en las tablas se encarga de colapsar las transiciones para con ello generar nuevasTransiciones.
 -- Posteriormente buscamos el nuevo estado inicial a partir de encontrar el representante del estado inicial en la lista de pares
