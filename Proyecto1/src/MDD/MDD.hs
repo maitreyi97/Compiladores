@@ -25,8 +25,6 @@ data MDD = MDD {
 } deriving (Show)
 
 -- Función que construye el MDD a partir de una lista de categorías (nombre y expresión regular)
--- Vamos a generar un AFD minimizado para cada categoría reenombrado para evitar conflictos
--- 
 construirMDD :: [Categoria] -> MDD
 construirMDD categorias =
   let
