@@ -6,17 +6,14 @@ import System.Environment (getArgs)
 main :: IO ()
 main = do
     args <- getArgs
-    let specFile = "src/Regex/spec.txt"
-    let inputFile = head args 
+    case args of
+      [specFile, inputFile] -> do 
+        inputString <- readFile inputFile
+        putStrLn $ "Analizando archivo: " ++ inputFile
+        tokens <- lexer specFile inputString
 
-    inputString <- readFile inputFile
-
-    putStrLn $ "Analizando archivo: " ++ inputFile
-    tokens <- lexer specFile inputString
-
-    putStrLn "--- Tokens Generados ---"
-    mapM_ print tokens
-    putStrLn "------------------------"
-
--- Para ejecutarlo:
--- stack run -- samples/imp/test01.imp
+        putStrLn "--- Tokens Generados ---"
+        mapM_ print tokens
+        putStrLn "------------------------"
+      _ -> do
+        putStrLn "Argumentos: <Archivo especificaciones> <Archivo Codigo>"
