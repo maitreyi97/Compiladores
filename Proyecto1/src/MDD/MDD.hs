@@ -107,6 +107,7 @@ transicionMDD mdd estado simbolo = buscar (transicionesMDD mdd)
         | otherwise = buscar rest
 
 -- Función de transición extendida del MDD que procesa una cadena completa desde un estado inicial
+transicionExtendida :: MDD -> String -> Maybe EstadoMDD
 transicionExtendida mdd cadena = 
     transicionExtendidaAux mdd (estadoInicialMDD mdd) cadena
   where
