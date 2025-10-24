@@ -9,6 +9,7 @@ data Token
     | TokenElse
     | TokenWhile
     | TokenSkip
+    | TokenDo
     | TokenAsign
     | TokenInt String
     | TokenId String
@@ -19,6 +20,7 @@ data Token
     | TokenComentario String
     | TokenError String
     | TokenPalabraReservada String
+    | TokenTipoDato String
     deriving (Show, Eq)
 
 mapToken :: (String, String) -> Token
@@ -26,7 +28,8 @@ mapToken ("Control", "if")   = TokenIf
 mapToken ("Control", "else") = TokenElse
 mapToken ("Control", "while") = TokenWhile
 mapToken ("Control", "skip")  = TokenSkip
-mapToken ("Asign", lex)      = TokenAsign
+mapToken ("Control", "do") = TokenDo
+mapToken ("Assign", lex)      = TokenAsign
 mapToken ("Enteros", lex)    = TokenInt lex
 mapToken ("Id", lex)         = TokenId lex
 mapToken ("Bool", lex)       = TokenBool lex
@@ -35,6 +38,7 @@ mapToken ("BoolOP", lex)     = TokenBoolOp lex
 mapToken ("Delim", lex)      = TokenDelim lex
 mapToken ("Comentarios", lex) = TokenComentario lex
 mapToken ("PalabrasReservadas", lex) = TokenPalabraReservada lex
+mapToken ("TipoDato", lex) = TokenTipoDato lex
 mapToken (catError, lex)     = TokenError lex 
 
 lexer :: String -> String -> IO [Token]

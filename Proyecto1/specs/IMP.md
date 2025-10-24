@@ -2,7 +2,7 @@ Comentarios -> //
 
 Control -> skip|if|then|else|while|do
 
-Asign -> :=
+Assign -> :=
 
 Delim -> \\(|\\)|{|}|;
 
