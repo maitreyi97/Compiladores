@@ -1,0 +1,19 @@
+// Esto es un comentario de prueba
+// Programa de factorial simple en IMP
+
+{
+  x := 10;
+  fact := 1;
+
+  while (x >= 1) do {
+    fact := fact * x;
+    x := x - 1
+  };
+
+  // Comprobacion final
+  if (fact >= 0) and True then 
+    skip
+  else 
+    skip
+}
+// Fin del programa
