@@ -8,7 +8,9 @@
 #### Vidal Aguilar Diego Jesus 319297591
 
 ## Instrucciones de compilación 
-Para el lenguaje IMP ir al directorio del proyecto y ejecutar en terminal
+Ir a la ruta del proyecto y ejecutar en terminal
+
+Para el lenguaje IMP
 ```
 stack run -- samples/imp/imp.spec samples/imp/ejemplo.imp
 ```
