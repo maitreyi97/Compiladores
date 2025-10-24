@@ -1,4 +1,4 @@
-# Compiladores
+# Compiladores 2026-1
 ## Equipo: Turingenieros: computable++
 ### Integrantes: 
 
