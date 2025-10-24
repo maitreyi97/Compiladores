@@ -12,10 +12,10 @@ Ir a la ruta del proyecto y ejecutar en terminal
 
 Para el lenguaje IMP
 ```
-stack run -- samples/imp/imp.spec samples/imp/ejemplo.imp
+stack run -- specs/IMP.md samples/imp/ejemplo.imp
 ```
 
-Para probar el segundo lenguaje
+Para el segundo lenguaje
 ```
 stack run -- specs/IMP.md samples/otro/ejemplo.sql
 ```
