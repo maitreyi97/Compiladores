@@ -9,6 +9,7 @@ data Token
     | TokenElse
     | TokenWhile
     | TokenSkip
+    | TokenDo
     | TokenAsign
     | TokenInt String
     | TokenId String
@@ -27,7 +28,8 @@ mapToken ("Control", "if")   = TokenIf
 mapToken ("Control", "else") = TokenElse
 mapToken ("Control", "while") = TokenWhile
 mapToken ("Control", "skip")  = TokenSkip
-mapToken ("Asign", lex)      = TokenAsign
+mapToken ("Control", "do") = TokenDo
+mapToken ("Assign", lex)      = TokenAsign
 mapToken ("Enteros", lex)    = TokenInt lex
 mapToken ("Id", lex)         = TokenId lex
 mapToken ("Bool", lex)       = TokenBool lex
