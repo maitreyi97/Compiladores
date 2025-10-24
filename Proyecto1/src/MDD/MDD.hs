@@ -30,7 +30,7 @@ construirMDD categorias =
   let
     afdsMinimizados = map (\(nombre, regex) -> (nombre, (renombrarAFD (generarAFDMin regex) (nombre ++ "_")))) categorias
     mapFinalesACat = Map.fromList (concatMap (\(nombre, (AFD _ _ _ _ finals)) -> (map (\q -> (q, nombre)) finals)) afdsMinimizados)
-    unificado =  minimizarAFD (afn_afd (afne_to_afn (unificarAFDs afdsMinimizados "mdd_inicial")))
+    unificado =  afn_afd (afne_to_afn (unificarAFDs afdsMinimizados "mdd_inicial"))
     (estadosFinales, mu) = construirFuncionMu (getFinales unificado) mapFinalesACat (map fst categorias)
   in  aux unificado mu estadosFinales
   where
